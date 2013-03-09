@@ -24,10 +24,15 @@
 
 # metadata
 ' Python Nuitka-GUI '
-__version__ = ' 0.750 '
+__version__ = ' 0.8 '
 __license__ = ' Apache '
 __author__ = ' juancarlospaco '
 __email__ = ' juancarlospaco@ubuntu.com '
+__url__ = 'nuitka.net'
+__date__ = '2013/03/10'
+__prj__ = 'nuitka_gui'
+__docformat__ = 'html'
+__source__ = ''
 
 
 # imports
@@ -47,6 +52,7 @@ except ImportError:
 
 
 # constants
+DEBUG = False
 
 
 print(('#' * 80))
@@ -130,16 +136,16 @@ class MyMainWindow(QMainWindow):
             self.statusBar().showMessage(__doc__)
 
         # Main Window initial Geometry
-        self.resize(600, 750)
+        self.resize(600, 800)
 
         # Main Window initial Title
         self.setWindowTitle(__doc__)
 
         # Main Window Minimum Size
-        self.setMinimumSize(600, 750)
+        self.setMinimumSize(600, 800)
 
         # Main Window Maximum Size
-        self.setMaximumSize(640, 768)
+        self.setMaximumSize(640, 800)
 
         # Main Window initial Font type
         self.setFont(QtGui.QFont('Ubuntu Light', 10))
@@ -359,7 +365,7 @@ class MyMainWindow(QMainWindow):
 
         self.stack = StackedWidget(self)
         #self.stack.resize(self.size())
-        self.stack.setGeometry(QtCore.QRect(25, 50, 550, 625))
+        self.stack.setGeometry(QtCore.QRect(25, 50, 550, 675))
         self.stack.setFrameShape(QtGui.QFrame.NoFrame)
         self.stack.setFrameShadow(QtGui.QFrame.Plain)
         self.stack.setMidLineWidth(0)
@@ -1079,14 +1085,57 @@ class MyMainWindow(QMainWindow):
             'Specify Output Directory for C++ files. Defaults  to current dir')
         self.btn1.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         # Ask the User for the source output directory
-        self.connect(self.btn1, QtCore.SIGNAL('clicked()'),
-            lambda: open('.nuitka-output-dir.txt', 'w').write(str(
+        self.btn1.clicked.connect(lambda:
+            open('.nuitka-output-dir.txt', 'w').write(str(
             QFileDialog.getExistingDirectory(self,
             'Please, Open an Output Directory to write C++ code and binary...',
             os.path.expanduser("~")))))
-        self.connect(self.btn1, QtCore.SIGNAL('released()'),
-            lambda: self.outdir.setText(
-                open('.nuitka-output-dir.txt', 'r').read()))
+        self.btn1.released.connect(lambda: self.outdir.setText(
+            open('.nuitka-output-dir.txt', 'r').read()))
+
+        self.label13 = QtGui.QLabel(self.groupBox1)
+        self.label13.setText(' Target Python')
+        self.label13.setToolTip('Specify Target Python App to Binary Compile')
+        self.label13.setGeometry(QtCore.QRect(25, 625, 125, 25))
+        self.label13.setObjectName("label13")
+
+        self.target = QtGui.QLineEdit(self.groupBox1)
+        self.target.setGeometry(QtCore.QRect(152, 625, 350, 25))
+        self.target.setToolTip('Specify Target Python App to Binary Compile')
+
+        self.clearButton2 = QtGui.QToolButton(self.target)
+        self.clearButton2.setIcon(QtGui.QIcon.fromTheme("edit-clear"))
+        self.clearButton2.setIconSize(QSize(25, 20))
+        self.clearButton2.setCursor(QtCore.Qt.ArrowCursor)
+        self.clearButton2.setStyleSheet("QToolButton{border:none;}")
+        self.clearButton2.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.clearButton2.hide()
+        self.clearButton2.clicked.connect(self.target.clear)
+        self.clearButton2.move(320, 1)
+        self.target.textChanged.connect(
+            lambda: self.clearButton2.setVisible(True))
+        self.clearButton2.clicked.connect(
+            lambda: self.clearButton.setVisible(False))
+        self.target.setPlaceholderText(' Target Python App to Binary Compile')
+        # directory auto completer
+        self.target.setCompleter(self.completer)
+
+        self.btn2 = QtGui.QPushButton('', self.groupBox1)
+        self.btn2.setIcon(QtGui.QIcon.fromTheme("document-open"))
+        self.btn2.setGeometry(505, 625, 35, 35)
+        self.btn2.setToolTip(
+            'Specify Output Directory for C++ files. Defaults  to current dir')
+        self.btn2.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        # Ask the User for the source output directory
+        self.btn2.clicked.connect(lambda: self.target.setText(str(
+            QFileDialog.getOpenFileName(self,
+            " Please, open a .py file to be compiled to C++ ... ",
+            # read output dir from file if it exist else use users home dir
+            str(open('.nuitka-output-dir.txt', 'r').read())
+                if os.path.isfile('.nuitka-output-dir.txt')
+                    else os.path.expanduser("~"),
+            # file extensions, plus a wildcard
+            ';;'.join(['(*%s)' % e for e in ['.py', '.PY', '.pyw', '']])))))
 
         self.label13 = QtGui.QLabel(self.groupBox1)
         self.label13.setText(' MultiProcessing Workers')
@@ -1108,16 +1157,14 @@ class MyMainWindow(QMainWindow):
         menu_salir.setShortcut('Ctrl+Q')
         # set the triggered signal to the quit slot
         menu_salir.setStatusTip('Quit')
-        self.connect(menu_salir, QtCore.SIGNAL('triggered()'), QtGui.qApp,
-            QtCore.SLOT('quit()'))
+        menu_salir.triggered.connect(exit)
 
         # Minimize, hide
         menu_minimize = QtGui.QAction(QtGui.QIcon.fromTheme("go-down"),
             'Minimize', self)
         # set the triggered signal to the quit slot
         menu_minimize.setStatusTip('Minimize')
-        self.connect(menu_minimize, QtCore.SIGNAL('triggered()'),
-            lambda: self.showMinimized())  # and showNormal() self.hide()
+        menu_minimize.triggered.connect(lambda: self.showMinimized())
 
         # about Qt
         menu_qt = QtGui.QAction(QtGui.QIcon.fromTheme("help-about"),
@@ -1125,8 +1172,7 @@ class MyMainWindow(QMainWindow):
         # set the status tip for this menu item
         menu_qt.setStatusTip('About Qt...')
         # set the triggered signal to lambda for the about qt built-in gui
-        self.connect(menu_qt, QtCore.SIGNAL('triggered()'),
-            lambda: QMessageBox.aboutQt(self))
+        menu_qt.triggered.connect(lambda: QMessageBox.aboutQt(self))
 
         # open dev docs
         menu_dev = QtGui.QAction(
@@ -1135,10 +1181,8 @@ class MyMainWindow(QMainWindow):
         # set the status tip for this menu item
         menu_dev.setStatusTip('Open Nuitka Developer Manual PDF...')
         # set the triggered signal to lambda for the about qt built-in gui
-        self.connect(menu_dev, QtCore.SIGNAL('triggered()'),
-            lambda: subprocess.call(
-            'nice -n 9 xdg-open /usr/share/doc/nuitka/Developer_Manual.pdf.gz',
-            shell=True))
+        menu_dev.triggered.connect(lambda: subprocess.call(
+        'xdg-open /usr/share/doc/nuitka/Developer_Manual.pdf.gz', shell=True))
 
         # open user docs
         menu_usr = QtGui.QAction(
@@ -1147,10 +1191,8 @@ class MyMainWindow(QMainWindow):
         # set the status tip for this menu item
         menu_usr.setStatusTip('Open Nuitka End User Manual PDF...')
         # set the triggered signal to lambda for the about qt built-in gui
-        self.connect(menu_usr, QtCore.SIGNAL('triggered()'),
-            lambda: subprocess.call(
-                'nice -n 19 xdg-open /usr/share/doc/nuitka/README.pdf.gz',
-                shell=True))
+        menu_usr.triggered.connect(lambda: subprocess.call(
+        'nice -n 19 xdg-open /usr/share/doc/nuitka/README.pdf.gz', shell=True))
 
         # open online docs
         menu_odoc = QtGui.QAction(QtGui.QIcon.fromTheme("help-browser"),
@@ -1158,8 +1200,8 @@ class MyMainWindow(QMainWindow):
         # set the status tip for this menu item
         menu_odoc.setStatusTip('Open Nuitka on line Documentation pages...')
         # set the triggered signal to lambda for the about qt built-in gui
-        self.connect(menu_odoc, QtCore.SIGNAL('triggered()'),
-            lambda: webbrowser.open_new_tab('http://nuitka.net/doc'))
+        menu_odoc.triggered.connect(lambda:
+                            webbrowser.open_new_tab('http://nuitka.net/doc'))
 
         # open Man Pages
         menu_man = QtGui.QAction(QtGui.QIcon.fromTheme("utilities-terminal"),
@@ -1167,8 +1209,7 @@ class MyMainWindow(QMainWindow):
         # set the status tip for this menu item
         menu_man.setStatusTip('Open Nuitka technical command line Man Pages..')
         # set the triggered signal to lambda for the about qt built-in gui
-        self.connect(menu_man, QtCore.SIGNAL('triggered()'),
-            lambda: os.system('nice --adjustment=19 xterm -e "man nuitka"'))
+        menu_man.triggered.connect(lambda: os.system('xterm -e "man nuitka"'))
 
         # open source code
         menu_tra = QtGui.QAction(
@@ -1177,8 +1218,7 @@ class MyMainWindow(QMainWindow):
         # set the status tip for this menu item
         menu_tra.setStatusTip('View, study, edit Nuitka-GUI Libre Source Code')
         # set the triggered signal to lambda for the about qt built-in gui
-        self.connect(menu_tra, QtCore.SIGNAL('triggered()'),
-            lambda: os.system('nice --adjustment=19 xdg-open ' + __file__))
+        menu_tra.triggered.connect(lambda: os.system('xdg-open ' + __file__))
 
         # open output dir
         menu_foo = QtGui.QAction(QtGui.QIcon.fromTheme("folder"),
@@ -1186,9 +1226,8 @@ class MyMainWindow(QMainWindow):
         # set the status tip for this menu item
         menu_foo.setStatusTip('Open the actual Output Directory location...')
         # set the triggered signal to lambda for the about qt built-in gui
-        self.connect(menu_foo, QtCore.SIGNAL('triggered()'),
-            lambda: os.system('nice --adjustment=19 xdg-open ' +
-                                                    str(self.outdir.text())))
+        menu_foo.triggered.connect(lambda: os.system('nice -n 19 xdg-open ' +
+                                                     str(self.outdir.text())))
 
         # about keyboard shortcuts
         menu_kb = QtGui.QAction(QtGui.QIcon.fromTheme("input-keyboard"),
@@ -1196,21 +1235,18 @@ class MyMainWindow(QMainWindow):
         # set the status tip for this menu item
         menu_kb.setStatusTip('Keyboard Shortcuts...')
         # set the triggered signal to lambda for the about qt built-in gui
-        self.connect(menu_kb, QtCore.SIGNAL('triggered()'),
-            lambda: QtGui.QMessageBox.information(self, 'Keyboard Shortcuts',
-                                                        ' Ctrl+Q = Quit '))
+        menu_kb.triggered.connect(lambda: QtGui.QMessageBox.information(self,
+            'Keyboard Shortcuts', ' Ctrl+Q = Quit '))
 
         # take a shot
         menu_pic = QtGui.QAction(QtGui.QIcon.fromTheme("camera-photo"),
             'Take Screenshot', self)
         # set the status tip for this menu item
         menu_pic.setStatusTip('Take a Screenshot for Documentation purposes..')
-        self.connect(menu_pic, QtCore.SIGNAL('triggered()'),
-            lambda:  # one-liner lambda to take a screenshot, I <3 Qt
-            QtGui.QPixmap.grabWindow(QtGui.QApplication.desktop().winId()
-            ).save(QtGui.QFileDialog.getSaveFileName(self,
-            " Save Screenshot As ... ", os.path.expanduser("~"),
-            ';;'.join(['(*%s)' % e for e in ['.png', '.PNG', '']]), 'png'))
+        menu_pic.triggered.connect(lambda: QtGui.QPixmap.grabWindow(
+            QtGui.QApplication.desktop().winId()).save(
+            QtGui.QFileDialog.getSaveFileName(self, " Save Screenshot As ...",
+            os.path.expanduser("~"), ';;.png', 'png'))
         )
 
         # movable draggable toolbar
@@ -1252,7 +1288,7 @@ class MyMainWindow(QMainWindow):
         # Bottom Buttons Bar
         self.buttonBox = QtGui.QDialogButtonBox(self)
         # set the geometry of buttonbox
-        self.buttonBox.setGeometry(QtCore.QRect(25, 666, 550, 32))
+        self.buttonBox.setGeometry(QtCore.QRect(25, 715, 550, 32))
         # set the orientation, can be horizontal or vertical
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
         # define the buttons to use on it, std buttons uncomment to use
@@ -1266,10 +1302,8 @@ class MyMainWindow(QMainWindow):
         # give the object a name
         self.buttonBox.setObjectName("buttonBox")
         # Help Button Action connection helpRequested() to a QMessageBox
-        QtCore.QObject.connect(self.buttonBox,
-            QtCore.SIGNAL("helpRequested()"),
-            lambda: QMessageBox.about(self, __doc__, str(__doc__ +
-            ', using Nuitka ' +
+        self.buttonBox.helpRequested.connect(lambda: QMessageBox.about(self,
+            __doc__, str(__doc__ + ', using Nuitka ' +
             subprocess.check_output('nuitka --version', shell=True) +
             'GUI version ' + __version__ + ' (' + __license__ + '),\n by ' +
             __author__ + ', ( ' + __email__ + ' ). \n \n \n ' +
@@ -1280,11 +1314,9 @@ class MyMainWindow(QMainWindow):
             ' \n \n Please visit Nuitka.net...'
             )))
         # Help Button Action connection to a quit() slot
-        QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL("rejected()"),
-            QtGui.qApp, QtCore.SLOT('quit()'))
+        self.buttonBox.rejected.connect(exit)
         # Help Button Action connection to a quit() slot
-        QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL("accepted()"),
-            self.run)
+        self.buttonBox.accepted.connect(self.run)
         # Paleta de colores para pintar transparente
         palette = self.palette()
         # add a transparent to the brush of palette
@@ -1297,18 +1329,8 @@ class MyMainWindow(QMainWindow):
 
     def run(self):
         ' run the actual conversion '
-        # target
-        target = str(QFileDialog.getOpenFileName(self,
-            " Please, open a .py file to be compiled to C++ ... ",
-            # read output dir from file if it exist else use users home dir
-            str(open('.nuitka-output-dir.txt', 'r').read())
-                if os.path.isfile('.nuitka-output-dir.txt')
-                    else os.path.expanduser("~"),
-            # file extensions, plus a wildcard
-            ';;'.join(['(*%s)' % e for e in ['.py', '.PY', '']])))
-        print((" INFO: Working on conversion of " + target +
-              ', started compiling at ' + str(datetime.datetime.now())))
-
+        print((' INFO: Working compiling at ' + str(datetime.datetime.now())))
+        target = str(self.target.text()).strip()
         # Fill the tab2 and display it
         fake_tree = subprocess.check_output('nuitka --dump-tree ' + target,
                                                                     shell=True)
@@ -1419,9 +1441,10 @@ class MyMainWindow(QMainWindow):
             pyv = '3.2'
         #
         # debug
-        #print(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10,
-        #arg1a, arg2a, arg3a, arg4a, arg5a, arg6a, arg7a, arg8a, arg9a, arg10a,
-        #str(self.combo1.currentText()), str(self.outdir.text()), target)
+        if DEBUG is True:
+            print(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10,
+            arg1a, arg2a, arg3a, arg4a, arg5a, arg6a, arg7a, arg8a, arg9a,
+            arg10a, str(self.combo1.currentText()), str(self.outdir.text()))
         print((' INFO: Started Compiling at ' + str(datetime.datetime.now())))
         # run the subprocesses
         subprocess.Popen('nice --adjustment=' +
@@ -1498,7 +1521,8 @@ def main():
     OPAQUE = True
     BORDER = True
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 'hvob', ['version', 'help', 'opaque', 'border'])
+        opts, args = getopt.getopt(sys.argv[1:], 'hvob',
+                                   ['version', 'help', 'opaque', 'border'])
         pass
     except:
         pass
@@ -1528,10 +1552,10 @@ def main():
     # w is gonna be the mymainwindow class
     w = MyMainWindow()
     # set the class with the attribute of translucent background as true
-    if OPAQUE == True:
+    if OPAQUE is True:
         w.setAttribute(Qt.WA_TranslucentBackground, True)
     # WM Borders
-    if BORDER == True:
+    if BORDER is True:
         w.setWindowFlags(w.windowFlags() | QtCore.Qt.FramelessWindowHint)
     # run the class
     w.show()
