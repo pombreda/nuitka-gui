@@ -57,7 +57,7 @@ except ImportError:
 
 
 # constants
-DEBUG = False
+DEBUG = True
 
 
 ###############################################################################
@@ -169,10 +169,7 @@ class MyMainWindow(QMainWindow):
             QToolBar, QStatusBar, QDockWidget::title{background-color:#323232;}
             QToolBar::handle,
             QToolBar::handle:vertical, QToolBar::handle:horizontal {
-                background-color: QLinearGradient(spread:pad, x1:0, y1:0, x2:1,
-                    y2:0.27, stop:0 rgba(0, 0, 0, 255),
-                    stop:1 rgba(150, 255, 255, 255));
-                border: 1px solid grey; border-radius: 9px; width: 19px;
+                border: 1px solid gray; border-radius: 9px; width: 19px;
                 height: 19px; margin: 0.5px
             }
             QGroupBox {
@@ -333,7 +330,7 @@ class MyMainWindow(QMainWindow):
         self.target.textChanged.connect(
             lambda: self.clearButton2.setVisible(True))
         self.clearButton2.clicked.connect(
-            lambda: self.clearButton.setVisible(False))
+            lambda: self.clearButton2.setVisible(False))
         self.target.setPlaceholderText('Target Python App to Binary Compile')
         self.target.setCompleter(self.completer)
         self.btn2 = QPushButton(QIcon.fromTheme("document-open"), '')
@@ -345,6 +342,30 @@ class MyMainWindow(QMainWindow):
         g1vlay.addWidget(QLabel('Input File'))
         g1vlay.addWidget(self.target)
         g1vlay.addWidget(self.btn2)
+
+        self.icon = QLineEdit()
+        self.icon.setStyleSheet("QLineEdit{margin-left:25px}")
+        self.clearButton3 = QToolButton(self.icon)
+        self.clearButton3.setIcon(QIcon.fromTheme("edit-clear"))
+        self.clearButton3.setIconSize(QSize(25, 25))
+        self.clearButton3.setStyleSheet("QToolButton{border:none}")
+        self.clearButton3.hide()
+        self.clearButton3.clicked.connect(self.icon.clear)
+        self.icon.textChanged.connect(
+            lambda: self.clearButton3.setVisible(True))
+        self.clearButton3.clicked.connect(
+            lambda: self.clearButton3.setVisible(False))
+        self.icon.setPlaceholderText('Path to Icon file for your App')
+        self.icon.setCompleter(self.completer)
+        self.btn3 = QPushButton(QIcon.fromTheme("document-open"), '')
+        self.btn3.clicked.connect(lambda: self.icon.setText(str(
+            QFileDialog.getOpenFileName(
+                self, "Open", path.expanduser("~"),
+                ';;'.join(['{}(*.{})'.format(e.upper(), e)
+                           for e in ('ico', 'png', 'bmp', 'svg', '*')])))))
+        g1vlay.addWidget(QLabel('Icon File'))
+        g1vlay.addWidget(self.icon)
+        g1vlay.addWidget(self.btn3)
 
         # Menu Bar inicialization and detail definitions
         menu_salir = QAction(QIcon.fromTheme("application-exit"), 'Quit', self)
@@ -371,8 +392,8 @@ class MyMainWindow(QMainWindow):
                 shell=True))
         menu_odoc = QAction(QIcon.fromTheme("help-browser"), 'OnLine Doc', self)
         menu_odoc.setStatusTip('Open Nuitka on line Documentation pages...')
-        menu_odoc.triggered.connect(lambda:
-                                    open_new_tab('http://nuitka.net/doc'))
+        menu_odoc.triggered.connect(
+            lambda: open_new_tab('http://nuitka.net/doc/user-manual.html'))
         menu_man = QAction(QIcon.fromTheme("utilities-terminal"), 'Man', self)
         menu_man.setStatusTip('Open Nuitka technical command line Man Pages..')
         menu_man.triggered.connect(lambda: system('xterm -e "man nuitka"'))
@@ -440,130 +461,51 @@ class MyMainWindow(QMainWindow):
         fake_tree = check_output('nuitka --dump-tree ' + target, shell=True)
         self.treeview_nodes.setText(fake_tree.strip())
         self.textedit_source.setText(open(target, "r").read().strip())
-        self.output.append('Working on ' + target)
 
-        # Parse Value of Slider1 as the Debug flag parameter
-        if self.slider1.value() == 0:
-            arg1 = ''
-        else:
-            arg1 = '--debug '
-        # Parse Value of Slider2 as the verbose flag parameter
-        if self.slider2.value() == 0:
-            arg2 = ''
-        else:
-            arg2 = '--verbose '
-        # Parse Value of Slider3 as the show progress flag parameter
-        if self.slider3.value() == 0:
-            arg3 = ''
-        else:
-            arg3 = '--show-progress '
-        # Parse Value of Slider4 as the show scons flag parameter
-        if self.slider4.value() == 0:
-            arg4 = ''
-        else:
-            arg4 = '--show-scons '
-        # Parse Value of Slider4 as the unstripped flag parameter
-        if self.slider5.value() == 0:
-            arg5 = ''
-        else:
-            arg5 = '--unstriped '
-        # Parse Value of Slider5 as the trace executions flag parameter
-        if self.slider6.value() == 0:
-            arg6 = ''
-        else:
-            arg6 = '--trace-execution '
-        # Parse Value of Slider5 as the remove output flag parameter
-        if self.slider7.value() == 0:
-            arg7 = ''
-        else:
-            arg7 = '--remove-output '
-        # Parse Value of Slider5 as the no optimiztions flag parameter
-        if self.slider8.value() == 0:
-            arg8 = ''
-        else:
-            arg8 = '--no-optimization '
-        # Parse Value of Slider5 as the no statement lines flag parameter
-        if self.slider9.value() == 0:
-            arg9 = ''
-        else:
-            arg9 = '--code-gen-no-statement-lines '
-        # Parse Value of Slider5 as the execute flag parameter
-        if self.slider10.value() == 0:
-            arg10 = ''
-        else:
-            arg10 = '--execute '
-        # Parse Value of Slider5 as the recurse all flag parameter
-        if self.slider1a.value() == 0:
-            arg1a = ''
-        else:
-            arg1a = '--recurse-all '
-        # Parse Value of Slider5 as the recurse none flag parameter
-        if self.slider2a.value() == 0:
-            arg2a = ''
-        else:
-            arg2a = '--recurse-none '
-        # Parse Value of Slider5 as the recurse std libs flag parameter
-        if self.slider3a.value() == 0:
-            arg3a = ''
-        else:
-            arg3a = '--recurse-stdlib '
-        # Parse Value of Slider5 as the clangs flag parameter
-        if self.slider4a.value() == 0:
-            arg4a = ''
-        else:
-            arg4a = '--clang '
-        # Parse Value of Slider5 as the lto flag parameter
-        if self.slider5a.value() == 0:
-            arg5a = ''
-        else:
-            arg5a = '--lto '
-        # Parse Value of Slider5 as the windows disable console flag parameter
-        if self.slider6a.value() == 0:
-            arg6a = ''
-        else:
-            arg6a = '--windows-disable-console '
-        # Parse Value of Slider5 as the windows targets flag parameter
-        if self.slider7a.value() == 0:
-            arg7a = ''
-        else:
-            arg7a = '--windows-target '
-        # Parse Value of Slider5 as the python debug flag parameter
-        if self.slider8a.value() == 0:
-            arg8a = ''
-        else:
-            arg8a = '--python-debug '
-        # Parse Value of Slider5 as the exe flag parameter
-        if self.slider9a.value() == 0:
-            arg9a = ''
-        else:
-            arg9a = '--exe '
-        # parse value of combo 1 as the python version
-        if self.combo1.currentText() == 2:
-            pyv = '2.7'
-        else:
-            pyv = '3.2'
-        # run the subprocesses
-        command_to_run_nuitka = ('nice --adjustment=' +
-         str(self.combo2.currentText()).lower().strip() + ' nuitka ' +
-         arg1 + arg2 + arg3 + arg4 + arg5 + arg6 + arg7 + arg8 + arg9 + arg10 +
-         arg1a + arg2a + arg3a + arg4a + arg5a + arg6a + arg7a + arg8a +
-         arg9a +
-            '--jobs=' + str(self.combo3.currentText()).lower().strip() + ' ' +
-            '--python-version="' + pyv +
-            '" ' +
-            '--output-dir=' + str(self.outdir.text()).lower().strip() +
-            ' ' + target +
-            ' && mv --verbose ' +
-            str(self.outdir.text()).lower().strip() + '/' +
-            str(target).replace('.py', '.exe ').split('/')[-1] +
-            str(self.outdir.text()).lower().strip() + '/' +
-            str(target).split('.')[0].split('/')[-1] +
-            ' ; nice -n 19  notify-send "[Nuitka-GUI]" "Python Compile Done."')
+        command_to_run_nuitka = " ".join((
+            'nuitka',
+            '--debug' if self.slider1.value() else '',
+            '--verbose' if self.slider2.value() else '',
+            '--show-progress' if self.slider3.value() else '',
+            '--show-scons' if self.slider4.value() else '',
+            '--unstriped' if self.slider5.value() else '',
+            '--trace-execution' if self.slider6.value() else '',
+            '--remove-output' if self.slider7.value() else '',
+            '--no-optimization' if self.slider8.value() else '',
+            '--code-gen-no-statement-lines' if self.slider9.value() else '',
+            '--execute' if self.slider10.value() else '',
+            '--recurse-all' if self.slider1a.value() else '',
+            '--recurse-none' if self.slider2a.value() else '',
+            '--recurse-stdlib' if self.slider3a.value() else '',
+            '--clang' if self.slider4a.value() else '',
+            '--lto' if self.slider5a.value() else '',
+            '--windows-disable-console' if self.slider6a.value() else '',
+            '--windows-target' if self.slider7a.value() else '',
+            '--python-debug' if self.slider8a.value() else '',
+            '--exe' if self.slider9a.value() else '',
+
+            #'--module' if self else '',
+            #'--standalone' if self else '',
+            #'--nofreeze-stdlib' if self else '',
+            #'--mingw' if self else '',
+            #'--warn-implicit-exceptions' if self else '',
+            #'--execute-with-pythonpath' if self else '',
+            #'--enhanced' if self else '',
+            #'--show-modules' if self else '',
+            '--icon="{}"'.format(self.icon.text()) if self.icon.text() else '',
+
+            '--python-version={}'.format(
+                '2.7' if self.combo1.currentText() == 2 else '3.3'),
+            '--jobs={}'.format(self.combo3.currentText()),
+            '--output-dir="{}"'.format(self.outdir.text()),
+        ))
         if DEBUG:
             print(command_to_run_nuitka)
+
         #self.process.start(command_to_run_nuitka)
         #if not self.process.waitForStarted():
             #return  # ERROR
+        self.statusBar().showMessage("We are ready " + getuser().capitalize())
 
     def _process_finished(self):
         """finished sucessfully"""
