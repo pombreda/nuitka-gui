@@ -460,6 +460,7 @@ class MyMainWindow(QMainWindow):
         self.buttonBox = QDialogButtonBox(self)
         self.buttonBox.setStandardButtons(
             QDialogButtonBox.Ok | QDialogButtonBox.Close)
+        self.buttonBox.setStyleSheet("*{margin-right:50px}")
         self.buttonBox.rejected.connect(exit)
         self.buttonBox.accepted.connect(self.run)
 
