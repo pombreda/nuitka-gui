@@ -35,6 +35,7 @@ __docformat__ = 'html'
 
 # imports
 from subprocess import check_output
+from subprocess import call
 import sys
 from getopt import getopt
 from os import path
@@ -72,7 +73,7 @@ class MyMainWindow(QMainWindow):
         self.setWindowTitle(__doc__)
         self.setMinimumSize(600, 800)
         self.setMaximumSize(2048, 1024)
-        self.resize(1024, 800)
+        self.resize(1024, 840)
         self.setWindowIcon(QIcon.fromTheme("face-monkey"))
         self.setStyleSheet('''QWidget { color: #fff;/*background-color:#323232*/
             font-family: 'Ubuntu Light'; font-size: 14px
@@ -182,18 +183,20 @@ class MyMainWindow(QMainWindow):
         self.process.finished.connect(self._process_finished)
         self.process.error.connect(self._process_finished)
 
-        group0, group1 = QGroupBox("Options"), QGroupBox("Paths")
-        group2, group3 = QGroupBox("Nodes Tree"), QGroupBox("Python Code")
-        group4, group5 = QGroupBox("Logs"), QGroupBox("Info")
-        g0grid, g1vlay = QGridLayout(group0), QVBoxLayout(group1)
+        self.group0, self.group1 = QGroupBox("Options"), QGroupBox("Paths")
+        self.group2 = QGroupBox("Nodes Tree")
+        self.group3 = QGroupBox("Python Code")
+        self.group4, self.group5 = QGroupBox("Logs"), QGroupBox("Backend")
+        g0grid, g1vlay = QGridLayout(self.group0), QVBoxLayout(self.group1)
+        g5vlay = QVBoxLayout(self.group5)
 
         self.treeview_nodes, self.textedit_source = QTextEdit(), QTextEdit()
         self.output = QTextEdit()
         self.treeview_nodes.setAutoFormatting(QTextEdit.AutoAll)
         self.treeview_nodes.setWordWrapMode(QTextOption.NoWrap)
-        QVBoxLayout(group2).addWidget(self.treeview_nodes)
-        QVBoxLayout(group3).addWidget(self.textedit_source)
-        QVBoxLayout(group4).addWidget(self.output)
+        QVBoxLayout(self.group2).addWidget(self.treeview_nodes)
+        QVBoxLayout(self.group3).addWidget(self.textedit_source)
+        QVBoxLayout(self.group4).addWidget(self.output)
 
         self.slider1, self.slider2 = QSlider(), QSlider()
         g0grid.addWidget(self.slider1, 0, 0)
@@ -229,6 +232,16 @@ class MyMainWindow(QMainWindow):
         g0grid.addWidget(self.slider10, 9, 0)
         g0grid.addWidget(QLabel('Execute the output binary'), 9, 1)
 
+        self.slider11, self.slider12 = QSlider(), QSlider()
+        g0grid.addWidget(self.slider11, 10, 0)
+        g0grid.addWidget(QLabel('Warning detected implicit exceptions'), 10, 1)
+        g0grid.addWidget(self.slider12, 11, 0)
+        g0grid.addWidget(QLabel('Keep the PYTHONPATH, do not Reset it'), 11, 1)
+
+        self.slider13 = QSlider()
+        g0grid.addWidget(self.slider13, 12, 0)
+        g0grid.addWidget(QLabel('Enhance compile, CPython incompatible'), 12, 1)
+
         self.slider1a, self.slider2a = QSlider(), QSlider()
         g0grid.addWidget(self.slider1a, 0, 2)
         g0grid.addWidget(QLabel('Descendent Recursive Compile'), 0, 3)
@@ -255,34 +268,48 @@ class MyMainWindow(QMainWindow):
         g0grid.addWidget(self.slider8a, 7, 2)
         g0grid.addWidget(QLabel('Use Python Debug versions'), 7, 3)
 
-        self.slider9a = QSlider()
+        self.slider9a, self.slider10a = QSlider(), QSlider()
         self.slider9a.setValue(1)
         g0grid.addWidget(self.slider9a, 8, 2)
         g0grid.addWidget(QLabel('Create standalone executable'), 8, 3)
+        g0grid.addWidget(self.slider10a, 9, 2)
+        g0grid.addWidget(QLabel('Enable Standalone mode build'), 9, 3)
 
-        self.combo1 = QComboBox()
-        self.combo1.addItems(('2', '3'))
-        g0grid.addWidget(self.combo1, 10, 2)
-        g0grid.addWidget(QLabel('Python interpreter version'), 10, 3)
-        self.combo2 = QComboBox()
-        self.combo2.addItems(('20', '0', '10', '15', '-5', '-10', '-15', '-20'))
-        g0grid.addWidget(self.combo2, 9, 2)
-        g0grid.addWidget(QLabel('Backend Nice CPU priority'), 9, 3)
-        self.combo3 = QComboBox()
-        self.combo3.addItems(('1', '2', '3', '4', '5', '6', '7', '8', '9'))
-        g0grid.addWidget(self.combo3, 10, 0)
-        g0grid.addWidget(QLabel('MultiProcessing Workers'), 10, 1)
+        self.slider11a, self.slider12a = QSlider(), QSlider()
+        g0grid.addWidget(self.slider11a, 10, 2)
+        g0grid.addWidget(QLabel('Make module executable instead of app'), 10, 3)
+        g0grid.addWidget(self.slider12a, 11, 2)
+        g0grid.addWidget(QLabel('No froze module of stdlib as bytecode'), 11, 3)
+
+        self.slider13a = QSlider()
+        g0grid.addWidget(self.slider13a, 12, 2)
+        g0grid.addWidget(QLabel('Force use of MinGW on MS Windows'), 12, 3)
 
         for each_widget in (
             self.slider1, self.slider2, self.slider3, self.slider4,
             self.slider5, self.slider6, self.slider7, self.slider8,
-            self.slider9, self.slider10, self.slider1a, self.slider2a,
-            self.slider3a, self.slider4a, self.slider5a, self.slider6a,
-                self.slider7a, self.slider8a, self.slider9a):
+            self.slider9, self.slider10, self.slider11, self.slider12,
+            self.slider13, self.slider1a, self.slider2a, self.slider3a,
+            self.slider4a, self.slider5a, self.slider6a, self.slider7a,
+            self.slider8a, self.slider9a, self.slider10a, self.slider11a,
+                self.slider12a, self.slider13a):
             each_widget.setRange(0, 1)
             each_widget.setCursor(QCursor(Qt.OpenHandCursor))
             each_widget.setTickInterval(1)
             each_widget.TickPosition(QSlider.TicksBothSides)
+
+        self.combo1 = QComboBox()
+        self.combo1.addItems(('2.7', '2.6', '3.2', '3.3'))
+        g5vlay.addWidget(QLabel('Python Version'))
+        g5vlay.addWidget(self.combo1)
+        self.combo2 = QComboBox()
+        self.combo2.addItems(('Default', 'Low', 'High'))
+        g5vlay.addWidget(QLabel('CPU priority'))
+        g5vlay.addWidget(self.combo2)
+        self.combo3 = QComboBox()
+        self.combo3.addItems(('1', '2', '3', '4', '5', '6', '7', '8', '9'))
+        g5vlay.addWidget(QLabel('MultiProcessing Workers'))
+        g5vlay.addWidget(self.combo3)
 
         self.outdir = QLineEdit()
         self.outdir.setStyleSheet("QLineEdit{margin-left:25px}")
@@ -343,7 +370,7 @@ class MyMainWindow(QMainWindow):
         g1vlay.addWidget(self.target)
         g1vlay.addWidget(self.btn2)
 
-        self.icon = QLineEdit()
+        self.icon, self.icon_label = QLineEdit(), QLabel('Icon File')
         self.icon.setStyleSheet("QLineEdit{margin-left:25px}")
         self.clearButton3 = QToolButton(self.icon)
         self.clearButton3.setIcon(QIcon.fromTheme("edit-clear"))
@@ -363,7 +390,7 @@ class MyMainWindow(QMainWindow):
                 self, "Open", path.expanduser("~"),
                 ';;'.join(['{}(*.{})'.format(e.upper(), e)
                            for e in ('ico', 'png', 'bmp', 'svg', '*')])))))
-        g1vlay.addWidget(QLabel('Icon File'))
+        g1vlay.addWidget(self.icon_label)
         g1vlay.addWidget(self.icon)
         g1vlay.addWidget(self.btn3)
 
@@ -381,13 +408,13 @@ class MyMainWindow(QMainWindow):
                            'Developer Manual PDF', self)
         menu_dev.setStatusTip('Open Nuitka Developer Manual PDF...')
         menu_dev.triggered.connect(
-            lambda: subprocess.call(
+            lambda: call(
                 'xdg-open /usr/share/doc/nuitka/Developer_Manual.pdf.gz',
                 shell=True))
         menu_usr = QAction(QIcon.fromTheme("help-contents"), 'User Docs', self)
         menu_usr.setStatusTip('Open Nuitka End User Manual PDF...')
         menu_usr.triggered.connect(
-            lambda: subprocess.call(
+            lambda: call(
                 'nice -n 19 xdg-open /usr/share/doc/nuitka/README.pdf.gz',
                 shell=True))
         menu_odoc = QAction(QIcon.fromTheme("help-browser"), 'OnLine Doc', self)
@@ -396,15 +423,17 @@ class MyMainWindow(QMainWindow):
             lambda: open_new_tab('http://nuitka.net/doc/user-manual.html'))
         menu_man = QAction(QIcon.fromTheme("utilities-terminal"), 'Man', self)
         menu_man.setStatusTip('Open Nuitka technical command line Man Pages..')
-        menu_man.triggered.connect(lambda: system('xterm -e "man nuitka"'))
+        menu_man.triggered.connect(
+            lambda: call('xterm -e "man nuitka"', shell=True))
         menu_tra = QAction(QIcon.fromTheme("applications-development"),
                            'View Nuitka-GUI Source Code', self)
         menu_tra.setStatusTip('View, study, edit Nuitka-GUI Libre Source Code')
-        menu_tra.triggered.connect(lambda: system('xdg-open ' + __file__))
+        menu_tra.triggered.connect(
+            lambda: call('xdg-open ' + __file__, shell=True))
         menu_foo = QAction(QIcon.fromTheme("folder"), 'Open Output Dir', self)
         menu_foo.setStatusTip('Open the actual Output Directory location...')
-        menu_foo.triggered.connect(lambda: system('xdg-open ' +
-                                   str(self.outdir.text())))
+        menu_foo.triggered.connect(
+            lambda: call('xdg-open ' + str(self.outdir.text()), shell=True))
         menu_pic = QAction(QIcon.fromTheme("camera-photo"), 'Screenshot', self)
         menu_pic.setStatusTip('Take a Screenshot for Documentation purposes..')
         menu_pic.triggered.connect(
@@ -434,16 +463,22 @@ class MyMainWindow(QMainWindow):
         self.buttonBox.rejected.connect(exit)
         self.buttonBox.accepted.connect(self.run)
 
+        self.guimode = QComboBox()
+        self.guimode.addItems(('Full UX / UI', 'Simple UX / UI'))
+        self.guimode.setStyleSheet("""QComboBox{background:transparent;border:0;
+            margin-left:25px;color:gray;text-decoration:underline}""")
+        self.guimode.currentIndexChanged.connect(self.set_guimode)
+
         container = QWidget()
         container_layout = QGridLayout(container)  # Y, X
-        container_layout.addWidget(QLabel("<center><b>" + __doc__), 0, 1)
-        container_layout.addWidget(group2, 1, 0)
-        container_layout.addWidget(group3, 2, 0)
-        container_layout.addWidget(group0, 1, 1)
-        container_layout.addWidget(group1, 2, 1)
-        container_layout.addWidget(group4, 1, 2)
-        container_layout.addWidget(group5, 2, 2)
-        container_layout.addWidget(self.buttonBox, 3, 2)
+        container_layout.addWidget(self.guimode, 0, 1)
+        container_layout.addWidget(self.group2, 1, 0)
+        container_layout.addWidget(self.group3, 2, 0)
+        container_layout.addWidget(self.group0, 1, 1)
+        container_layout.addWidget(self.group1, 2, 1)
+        container_layout.addWidget(self.group4, 1, 2)
+        container_layout.addWidget(self.group5, 2, 2)
+        container_layout.addWidget(self.buttonBox, 3, 1)
         self.setCentralWidget(container)
         # Paleta de colores para pintar transparente
         palette = self.palette()
@@ -461,13 +496,14 @@ class MyMainWindow(QMainWindow):
         fake_tree = check_output('nuitka --dump-tree ' + target, shell=True)
         self.treeview_nodes.setText(fake_tree.strip())
         self.textedit_source.setText(open(target, "r").read().strip())
-
+        conditional_1 = sys.platform.startswith('linux')
+        conditional_2 = self.combo3.currentIndex() != 2
         command_to_run_nuitka = " ".join((
-            'nuitka',
+            'chrt -i 0' if conditional_1 and conditional_2 else '', 'nuitka',
             '--debug' if self.slider1.value() else '',
             '--verbose' if self.slider2.value() else '',
             '--show-progress' if self.slider3.value() else '',
-            '--show-scons' if self.slider4.value() else '',
+            '--show-scons --show-modules' if self.slider4.value() else '',
             '--unstriped' if self.slider5.value() else '',
             '--trace-execution' if self.slider6.value() else '',
             '--remove-output' if self.slider7.value() else '',
@@ -483,25 +519,19 @@ class MyMainWindow(QMainWindow):
             '--windows-target' if self.slider7a.value() else '',
             '--python-debug' if self.slider8a.value() else '',
             '--exe' if self.slider9a.value() else '',
-
-            #'--module' if self else '',
-            #'--standalone' if self else '',
-            #'--nofreeze-stdlib' if self else '',
-            #'--mingw' if self else '',
-            #'--warn-implicit-exceptions' if self else '',
-            #'--execute-with-pythonpath' if self else '',
-            #'--enhanced' if self else '',
-            #'--show-modules' if self else '',
+            '--standalone' if self.slider10a.value() else '',
+            '--module' if self.slider11a.value() else '',
+            '--nofreeze-stdlib' if self.slider12a.value() else '',
+            '--mingw' if self.slider13a.value() else '',
+            '--warn-implicit-exceptions' if self.slider11.value() else '',
+            '--execute-with-pythonpath' if self.slider12.value() else '',
+            '--enhanced' if self.slider13.value() else '',
             '--icon="{}"'.format(self.icon.text()) if self.icon.text() else '',
-
-            '--python-version={}'.format(
-                '2.7' if self.combo1.currentText() == 2 else '3.3'),
+            '--python-version={}'.format(self.combo1.currentText()),
             '--jobs={}'.format(self.combo3.currentText()),
-            '--output-dir="{}"'.format(self.outdir.text()),
-        ))
+            '--output-dir="{}"'.format(self.outdir.text())))
         if DEBUG:
             print(command_to_run_nuitka)
-
         #self.process.start(command_to_run_nuitka)
         #if not self.process.waitForStarted():
             #return  # ERROR
@@ -543,6 +573,13 @@ class MyMainWindow(QMainWindow):
         p.setOpacity(0.8)
         p.drawRoundedRect(self.rect(), 100, 50)
         p.end()
+
+    def set_guimode(self):
+        """Switch between simple and full UX"""
+        for widget in (
+            self.group2, self.group3, self.group4, self.group5, self.icon,
+                self.icon_label, self.btn3, self.toolbar, self.statusBar()):
+            widget.hide() if self.guimode.currentIndex() else widget.show()
 
 
 ###############################################################################
