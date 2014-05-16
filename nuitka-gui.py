@@ -78,48 +78,25 @@ class MyMainWindow(QMainWindow):
         self.setStyleSheet('''QWidget { color: #fff;/*background-color:#323232*/
             font-family: 'Ubuntu Light'; font-size: 14px
             }
-            QWidget:item:hover {
-                background-color: QLinearGradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                    stop: 0 #ffa02f, stop: 1 #ca0619); color: #000
-            }
-            QWidget:item:selected {
-                background-color: QLinearGradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                    stop: 0 #ffa02f, stop: 1 #d7801a)
+            QWidget:item:hover, QWidget:item:selected {
+                background-color: cyan; color: #000
             }
             QWidget:disabled { color: #404040; background-color: #323232 }
-            QWidget:focus {
-                background-image: None;
-                border: 2px solid QLinearGradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                    stop: 0 #ffa02f, stop: 1 #d7801a)
-            }
+            QWidget:focus { border: 1px solid cyan }
             QPushButton {
-                background-color: QLinearGradient(spread:pad, x1:0, y1:0, x2:1,
-                    y2:0.27, stop:0 rgba(99, 99, 99, 250), stop:1 #1e1e1e);
-                padding: 3px; border: 1px solid #1e1e1e; border-radius: 10px;
-                margin: 0; border-width: 1px; font-size: 12px;
+                background-color: gray;
+                padding: 3px; border: 1px solid gray; border-radius: 9px;
+                margin: 0;font-size: 12px;
                 padding-left: 5px; padding-right: 5px
             }
             QLineEdit, QTextEdit {
-                background-color: QLinearGradient(spread:pad, x1:0, y1:0, x2:1,
-                    y2:0.27, stop:0 #000, stop:1 #1e1e1e);
-                padding: 3px; border: 1px solid #1e1e1e; border-radius: 10px;
-                margin: 0; font-size: 12px; padding-left: 5px;
-                padding-right: 5px
+                background-color: #4a4a4a; border: 1px solid gray;
+                border-radius: 0; font-size: 12px;
             }
-            QPushButton:pressed {
-                background-color: QLinearGradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                    stop: 0 #2d2d2d, stop: 0.1 #2b2b2b, stop: 0.5 #292929,
-                    stop: 0.9 #282828, stop: 1 #252525)
-            }
+            QPushButton:pressed { background-color: #323232 }
             QComboBox {
-                background-color: QLinearGradient(spread:pad, x1:0, y1:0, x2:1,
-                    y2:0.273, stop:0 rgba(99, 99, 99, 250), stop:1 #1e1e1e);
-                padding: 3px; border: 3px solid #1e1e1e; border-radius: 15px;
-                margin: 0
-            }
-            QComboBox:hover, QPushButton:hover {
-                border: 1px solid QLinearGradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                    stop: 0 #ffa02f, stop: 1 #d7801a)
+                background-color: #4a4a4a; padding-left: 5px;
+                border: 1px solid gray; border-radius: 5px;
             }
             QComboBox QAbstractItemView {
                 border: 1px solid darkgray; background:grey;
@@ -562,7 +539,7 @@ class MyMainWindow(QMainWindow):
         for i in range(4096):
             x = randint(25, self.size().width() - 25)
             y = randint(25, self.size().height() - 25)
-            # p.setPen(QPen(QColor(random.randint(9, 255), 255, 255), 1))
+            # p.setPen(QPen(QColor(randint(9, 255), 255, 255), 1))
             p.drawPoint(x, y)
         p.setPen(QPen(Qt.white, 1))
         p.rotate(40)
@@ -572,7 +549,7 @@ class MyMainWindow(QMainWindow):
         p.setPen(Qt.NoPen)
         p.setBrush(QColor(0, 0, 0))
         p.setOpacity(0.8)
-        p.drawRoundedRect(self.rect(), 100, 50)
+        p.drawRoundedRect(self.rect(), 9, 9)
         p.end()
 
     def set_guimode(self):
