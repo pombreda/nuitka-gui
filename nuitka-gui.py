@@ -75,9 +75,7 @@ class MyMainWindow(QMainWindow):
         self.setMaximumSize(2048, 1024)
         self.resize(1024, 840)
         self.setWindowIcon(QIcon.fromTheme("face-monkey"))
-        self.setStyleSheet('''QWidget { color: #fff;/*background-color:#323232*/
-            font-family: 'Ubuntu Light'; font-size: 14px
-            }
+        self.setStyleSheet('''QWidget{color:#fff;font-family:Oxygen}
             QWidget:item:hover, QWidget:item:selected {
                 background-color: cyan; color: #000
             }
@@ -95,18 +93,15 @@ class MyMainWindow(QMainWindow):
             }
             QPushButton:pressed { background-color: #323232 }
             QComboBox {
-                background-color: #4a4a4a; padding-left: 5px;
+                background-color: #4a4a4a; padding-left: 9px;
                 border: 1px solid gray; border-radius: 5px;
             }
-            QComboBox QAbstractItemView {
-                border: 1px solid darkgray; background:grey;
-                selection-background-color: QLinearGradient(x1: 0, y1: 0,
-                    x2: 0, y2: 1, stop: 0 #ffa02f, stop: 1 #d7801a);
+            QComboBox:pressed { background-color: gray }
+            QComboBox QAbstractItemView, QMenu {
+                border: 1px solid #4a4a4a; background:grey;
+                selection-background-color: cyan;
+                selection-color: #000;
             }
-            QComboBox::drop-down {
-                 subcontrol-origin: padding; subcontrol-position: top right;
-                 width: 0; height: 0; border-left-width: 0; opacity: 0;
-             }
             QSlider {
                 padding: 3px; font-size: 8px; padding-left: 2px;
                 padding-right: 2px; border: 5px solid #1e1e1e
@@ -125,16 +120,13 @@ class MyMainWindow(QMainWindow):
             }
             QSlider::handle:vertical {
                 background-color: QLinearGradient(spread:pad, x1:0, y1:0, x2:1,
-                    y2:0.273, stop:0 rgba(0, 0, 0, 255),
-                    stop:1 rgba(150, 255, 255, 255));
+                    y2:0.273, stop:0 rgba(0, 0, 0, 255), stop:1 gray);
                 height: 5px; border: 1px dotted #fff; text-align: center;
                 border-top-left-radius: 2px; border-bottom-left-radius: 2px;
                 border-top-right-radius: 2px; border-bottom-right-radius 2px;
                 margin-left: 2px; margin-right: 2px;
             }
-            QSlider::handle:vertical:hover {
-                border: 2px solid #ffaa00; margin-left: 2px; margin-right: 2px;
-            }
+            QSlider::handle:vertical:hover { border: 1px solid cyan }
             QSlider::sub-page:vertical:disabled {
                 background: #bbb; border-color: #999;
             }
@@ -310,12 +302,16 @@ class MyMainWindow(QMainWindow):
         self.completer.setModel(self.dirs)
         self.completer.setCaseSensitivity(Qt.CaseInsensitive)
         self.completer.setCompletionMode(QCompleter.PopupCompletion)
+        self.completer.popup().setStyleSheet(
+            """border:1px solid #4a4a4a;background:grey;
+            selection-background-color:cyan;selection-color:#000""")
+        self.completer.popup().setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.outdir.setCompleter(self.completer)
 
         self.btn1 = QPushButton(QIcon.fromTheme("document-open"), '')
         self.btn1.clicked.connect(
             lambda: open('.nuitka-output-dir.txt', 'w').write(str(
-                QFileDialog.getExistingDirectory(self, 'Open Output Directory',
+                QFileDialog.getExistingDirectory(None, 'Open Output Directory',
                                                  path.expanduser("~")))))
         self.btn1.released.connect(lambda: self.outdir.setText(
             open('.nuitka-output-dir.txt', 'r').read()))
@@ -340,7 +336,7 @@ class MyMainWindow(QMainWindow):
         self.btn2 = QPushButton(QIcon.fromTheme("document-open"), '')
         self.btn2.clicked.connect(lambda: self.target.setText(str(
             QFileDialog.getOpenFileName(
-                self, "Open", path.expanduser("~"),
+                None, "Open", path.expanduser("~"),
                 ';;'.join(['{}(*.{})'.format(e.upper(), e)
                            for e in ('py', 'pyw', '*')])))))
         g1vlay.addWidget(QLabel('Input File'))
@@ -364,7 +360,7 @@ class MyMainWindow(QMainWindow):
         self.btn3 = QPushButton(QIcon.fromTheme("document-open"), '')
         self.btn3.clicked.connect(lambda: self.icon.setText(str(
             QFileDialog.getOpenFileName(
-                self, "Open", path.expanduser("~"),
+                None, "Open", path.expanduser("~"),
                 ';;'.join(['{}(*.{})'.format(e.upper(), e)
                            for e in ('ico', 'png', 'bmp', 'svg', '*')])))))
         g1vlay.addWidget(self.icon_label)
@@ -415,7 +411,7 @@ class MyMainWindow(QMainWindow):
         menu_pic.setStatusTip('Take a Screenshot for Documentation purposes..')
         menu_pic.triggered.connect(
             lambda: QPixmap.grabWindow(QApplication.desktop().winId()).save(
-                QFileDialog.getSaveFileName(self, "Save", path.expanduser("~"),
+                QFileDialog.getSaveFileName(None, "Save", path.expanduser("~"),
                                             'PNG(*.png)', 'png')))
 
         # movable draggable toolbar
