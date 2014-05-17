@@ -41,7 +41,6 @@ from getopt import getopt
 from os import path
 from random import randint
 from webbrowser import open_new_tab
-from getpass import getuser
 
 from PyQt4.QtCore import QDir, QSize, Qt, QProcess
 from PyQt4.QtGui import (QAction, QApplication, QColor, QComboBox, QCompleter,
@@ -69,7 +68,7 @@ class MyMainWindow(QMainWindow):
     def __init__(self, parent=None):
         ' Initialize QWidget inside MyMainWindow '
         super(MyMainWindow, self).__init__(parent)
-        self.statusBar().showMessage("We are ready " + getuser().capitalize())
+        self.statusBar().showMessage(__doc__.title())
         self.setWindowTitle(__doc__)
         self.setMinimumSize(600, 800)
         self.setMaximumSize(2048, 1024)
@@ -144,7 +143,9 @@ class MyMainWindow(QMainWindow):
             }
             QGroupBox {
                 border: 1px solid gray; border-radius: 9px; padding-top: 9px;
-            }''')
+            }
+            QStatusBar, QToolBar::separator:horizontal,
+            QToolBar::separator:vertical {color:gray}''')
 
         self.process = QProcess()
         self.process.readyReadStandardOutput.connect(self.read_output)
