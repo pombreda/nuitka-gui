@@ -34,22 +34,22 @@ __docformat__ = 'html'
 
 
 # imports
-from subprocess import check_output
-from subprocess import call
 import sys
 from getopt import getopt
 from os import path
 from random import randint
+from subprocess import call, check_output
 from webbrowser import open_new_tab
 
-from PyQt4.QtCore import QDir, QSize, Qt, QProcess
+from PyQt4.QtCore import QDir, QProcess, QSize, Qt
 from PyQt4.QtGui import (QAction, QApplication, QColor, QComboBox, QCompleter,
-                         QCursor, QDialogButtonBox, QDirModel, QFileDialog,
-                         QFont, QGridLayout, QGroupBox, QIcon, QLabel,
-                         QLineEdit, QMainWindow, QMessageBox, QPainter,
+                         QCursor, QDialogButtonBox, QDirModel, QDockWidget,
+                         QFileDialog, QFont, QGridLayout, QGroupBox, QIcon,
+                         QLabel, QLineEdit, QMainWindow, QMessageBox, QPainter,
                          QPalette, QPen, QPixmap, QPushButton, QSizePolicy,
-                         QSlider, QTextOption, QToolBar, QToolButton, QWidget,
-                         QVBoxLayout)
+                         QSlider, QTextOption, QToolBar, QToolButton,
+                         QVBoxLayout, QWidget)
+
 try:
     from PyKDE4.kdeui import KTextEdit as QTextEdit
 except ImportError:
@@ -145,7 +145,44 @@ class MyMainWindow(QMainWindow):
                 border: 1px solid gray; border-radius: 9px; padding-top: 9px;
             }
             QStatusBar, QToolBar::separator:horizontal,
-            QToolBar::separator:vertical {color:gray}''')
+            QToolBar::separator:vertical {color:gray}
+            QScrollBar:vertical{
+                background: qlineargradient(x1: 0, y1: 0, x2: 1, y2: 0,
+                    stop: 0 #212121,stop: 1.0 #323232);
+                width: 10px;
+            }
+            QScrollBar:horizontal{
+                background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                    stop: 0 #212121,stop: 1.0 #323232);
+                height: 10px;
+            }
+            QScrollBar::handle:vertical{
+                padding: 2px;
+                min-height: 50px;
+                background: qlineargradient(x1: 0, y1: 0, x2: 1, y2: 0,
+                    stop: 0 #585858,stop: 1.0 #404040);
+                border-radius: 5px;
+                border: 1px solid #191919;
+            }
+            QScrollBar::handle:horizontal{
+                padding: 2px;
+                min-width: 50px;
+                background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                    stop: 0 #585858,stop: 1.0 #404040);
+                border-radius: 5px;
+                border: 1px solid #191919;
+            }
+            QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical,
+            QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical,
+            QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal,
+            QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal {
+                background: none; border: none;
+            }
+            QDockWidget::close-button, QDockWidget::float-button {
+                border: 1px solid gray;
+                border-radius: 3px;
+                background: darkgray;
+            }''')
 
         self.process = QProcess()
         self.process.readyReadStandardOutput.connect(self.read_output)
@@ -154,20 +191,30 @@ class MyMainWindow(QMainWindow):
         self.process.error.connect(self._process_finished)
 
         self.group0, self.group1 = QGroupBox("Options"), QGroupBox("Paths")
-        self.group2 = QGroupBox("Nodes Tree")
+        self.group2 = QGroupBox("Nodes")
         self.group3 = QGroupBox("Python Code")
         self.group4, self.group5 = QGroupBox("Logs"), QGroupBox("Backend")
         g0grid, g1vlay = QGridLayout(self.group0), QVBoxLayout(self.group1)
         g5vlay = QVBoxLayout(self.group5)
 
         self.treeview_nodes, self.textedit_source = QTextEdit(), QTextEdit()
-        self.output = QTextEdit()
+        self.dock1, self.dock2 = QDockWidget(), QDockWidget()
+        self.output, self.dock3 = QTextEdit(), QDockWidget()
         self.treeview_nodes.setAutoFormatting(QTextEdit.AutoAll)
         self.treeview_nodes.setWordWrapMode(QTextOption.NoWrap)
-        QVBoxLayout(self.group2).addWidget(self.treeview_nodes)
-        QVBoxLayout(self.group3).addWidget(self.textedit_source)
-        QVBoxLayout(self.group4).addWidget(self.output)
-
+        self.dock1.setWidget(self.treeview_nodes)
+        self.dock2.setWidget(self.textedit_source)
+        self.dock3.setWidget(self.output)
+        self.dock1.setWindowTitle("Tree")
+        self.dock2.setWindowTitle("Sources")
+        self.dock3.setWindowTitle("STDOutput")
+        featur = QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable
+        self.dock1.setFeatures(featur)
+        self.dock2.setFeatures(featur)
+        self.dock3.setFeatures(featur)
+        QVBoxLayout(self.group2).addWidget(self.dock1)
+        QVBoxLayout(self.group3).addWidget(self.dock2)
+        QVBoxLayout(self.group4).addWidget(self.dock3)
         self.slider1, self.slider2 = QSlider(), QSlider()
         g0grid.addWidget(self.slider1, 0, 0)
         g0grid.addWidget(QLabel('Use Debug'), 0, 1)
@@ -414,10 +461,17 @@ class MyMainWindow(QMainWindow):
             lambda: QPixmap.grabWindow(QApplication.desktop().winId()).save(
                 QFileDialog.getSaveFileName(None, "Save", path.expanduser("~"),
                                             'PNG(*.png)', 'png')))
+        menu_don = QAction(QIcon.fromTheme("emblem-favorite"),
+                           'Help Nuitka', self)
+        menu_don.setStatusTip('Help the Nuitka Open Source Libre Free Project')
+        menu_don.triggered.connect(
+            lambda: call('xdg-open http://nuitka.net/pages/donations.html',
+                         shell=True))
 
         # movable draggable toolbar
         self.toolbar = QToolBar(self)
         self.toolbar.setIconSize(QSize(16, 16))
+        self.toolbar.toggleViewAction().setText("Show/Hide Toolbar")
         l_spacer, r_spacer = QWidget(self), QWidget(self)
         l_spacer.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         r_spacer.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
@@ -425,7 +479,7 @@ class MyMainWindow(QMainWindow):
         self.toolbar.addSeparator()
         self.toolbar.addActions((
             menu_salir, menu_minimize, menu_qt, menu_man, menu_dev, menu_tra,
-            menu_odoc, menu_usr, menu_foo, menu_pic))
+            menu_odoc, menu_usr, menu_foo, menu_pic, menu_don))
         self.toolbar.addSeparator()
         self.toolbar.addWidget(r_spacer)
         self.addToolBar(Qt.BottomToolBarArea, self.toolbar)
@@ -434,7 +488,6 @@ class MyMainWindow(QMainWindow):
         self.buttonBox = QDialogButtonBox(self)
         self.buttonBox.setStandardButtons(
             QDialogButtonBox.Ok | QDialogButtonBox.Close)
-        self.buttonBox.setStyleSheet("*{margin-right:50px}")
         self.buttonBox.rejected.connect(exit)
         self.buttonBox.accepted.connect(self.run)
 
@@ -463,10 +516,11 @@ class MyMainWindow(QMainWindow):
 
     def run(self):
         ' run the actual backend process '
+        self.buttonBox.setDisabled(True)
         self.treeview_nodes.clear()
         self.textedit_source.clear()
         self.output.clear()
-        self.statusBar().showMessage('Working...')
+        self.statusBar().showMessage('WAIT!, Working...')
         target = str(self.target.text()).strip()
         fake_tree = check_output('nuitka --dump-tree ' + target, shell=True)
         self.treeview_nodes.setText(fake_tree.strip())
@@ -504,13 +558,14 @@ class MyMainWindow(QMainWindow):
             '--icon="{}"'.format(self.icon.text()) if self.icon.text() else '',
             '--python-version={}'.format(self.combo1.currentText()),
             '--jobs={}'.format(self.combo3.currentText()),
-            '--output-dir="{}"'.format(self.outdir.text())))
+            '--output-dir="{}"'.format(self.outdir.text()), target))
         if DEBUG:
             print(command_to_run_nuitka)
-        #self.process.start(command_to_run_nuitka)
-        #if not self.process.waitForStarted():
-            #return  # ERROR
-        self.statusBar().showMessage("We are ready " + getuser().capitalize())
+        self.process.start(command_to_run_nuitka)
+        if not self.process.waitForStarted():
+            return  # ERROR !
+        self.statusBar().showMessage(__doc__.title())
+        self.buttonBox.setEnabled(True)
 
     def _process_finished(self):
         """finished sucessfully"""
@@ -519,11 +574,11 @@ class MyMainWindow(QMainWindow):
 
     def read_output(self):
         """Read and append output to the log"""
-        self.output.append(self.process.readAllStandardOutput())
+        self.output.append(str(self.process.readAllStandardOutput()))
 
     def read_errors(self):
         """Read and append errors to the log"""
-        self.output.append(self.process.readAllStandardError())
+        self.output.append(str(self.process.readAllStandardError()))
 
     def paintEvent(self, event):
         """Paint semi-transparent background,animated pattern,background text"""
