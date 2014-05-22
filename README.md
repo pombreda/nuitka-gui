@@ -1,6 +1,6 @@
 nuitka-gui
 ==========
 
-Nuitka-GUI the Python 3 Binary machine code Compiler and Node Inspector
+Nuitka-GUI the Python 3 Code Translator, Binary Compiler and Bundler.
 
-![ScreenShot](https://lh3.googleusercontent.com/-dTuiJiPyniQ/UOsBW_OsVjI/AAAAAAAACJY/-sjHSIynu8c/s518/temp.jpg)
+![ScreenShot](https://lh3.googleusercontent.com/-yESdqqX3LHI/U31pQCGknuI/AAAAAAAAFCA/t6ESlci7BCw/w1081-rw-h925-no/temp.jpg)
