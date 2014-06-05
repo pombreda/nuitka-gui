@@ -626,7 +626,6 @@ def main():
     ' Main Loop '
     global A11Y
     app = QApplication(sys.argv)
-    app.setStyle('Windows')
     try:
         opts, args = getopt(sys.argv[1:], 'hv', ('version', 'help', 'a11y'))
     except:
@@ -645,6 +644,7 @@ def main():
             A11Y = True
     w = MyMainWindow()
     if not A11Y:
+        app.setStyle('Windows')
         w.setAttribute(Qt.WA_TranslucentBackground, True)
     w.show()
     sys.exit(app.exec_())
