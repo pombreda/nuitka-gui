@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 # PEP8:OK, LINT:OK, PY3:OK
 
@@ -27,7 +27,7 @@ __version__ = ' 0.5.2 '
 __license__ = ' Apache '
 __author__ = ' juancarlospaco '
 __email__ = ' juancarlospaco@gmail.com '
-__url__ = 'nuitka.net'
+__url__ = 'http://nuitka.net'
 __date__ = '2014/05'
 __prj__ = 'nuitka_gui'
 __docformat__ = 'html'
@@ -57,7 +57,7 @@ except ImportError:
 
 
 # constants
-DEBUG = True
+DEBUG, A11Y = True, False
 OPEN = 'chrt -i 0 xdg-open ' if sys.platform.startswith('linux') else 'start '
 OPEN = 'open ' if sys.platform.startswith('darwin') else OPEN
 
@@ -74,9 +74,10 @@ class MyMainWindow(QMainWindow):
         self.setWindowTitle(__doc__)
         self.setMinimumSize(600, 800)
         self.setMaximumSize(2048, 1024)
-        self.resize(1024, 840)
+        self.resize(1024, 800)
         self.setWindowIcon(QIcon.fromTheme("face-monkey"))
-        self.setStyleSheet('''QWidget{color:#fff;font-family:Oxygen}
+        if not A11Y:
+            self.setStyleSheet('''QWidget{color:#fff;font-family:Oxygen}
             QWidget:item:hover, QWidget:item:selected {
                 background-color: cyan; color: #000
             }
@@ -507,10 +508,11 @@ class MyMainWindow(QMainWindow):
         container_layout.addWidget(self.buttonBox, 3, 1)
         self.setCentralWidget(container)
         # Paleta de colores para pintar transparente
-        palette = self.palette()
-        palette.setBrush(QPalette.Base, Qt.transparent)
-        self.setPalette(palette)
-        self.setAttribute(Qt.WA_OpaquePaintEvent, False)
+        if not A11Y:
+            palette = self.palette()
+            palette.setBrush(QPalette.Base, Qt.transparent)
+            self.setPalette(palette)
+            self.setAttribute(Qt.WA_OpaquePaintEvent, False)
 
     def get_fake_tree(self, target):
         """Return the fake tree."""
@@ -586,27 +588,28 @@ class MyMainWindow(QMainWindow):
 
     def paintEvent(self, event):
         """Paint semi-transparent background,animated pattern,background text"""
-        p = QPainter(self)
-        p.setRenderHint(QPainter.Antialiasing)
-        p.setRenderHint(QPainter.TextAntialiasing)
-        p.setRenderHint(QPainter.HighQualityAntialiasing)
-        p.fillRect(event.rect(), Qt.transparent)
-        # animated random dots background pattern
-        for i in range(4096):
-            x = randint(25, self.size().width() - 25)
-            y = randint(25, self.size().height() - 25)
-            # p.setPen(QPen(QColor(randint(9, 255), 255, 255), 1))
-            p.drawPoint(x, y)
-        p.setPen(QPen(Qt.white, 1))
-        p.rotate(40)
-        p.setFont(QFont('Ubuntu', 250))
-        p.drawText(200, 99, "Nuitka")
-        p.rotate(-40)
-        p.setPen(Qt.NoPen)
-        p.setBrush(QColor(0, 0, 0))
-        p.setOpacity(0.8)
-        p.drawRoundedRect(self.rect(), 9, 9)
-        p.end()
+        if not A11Y:
+            p = QPainter(self)
+            p.setRenderHint(QPainter.Antialiasing)
+            p.setRenderHint(QPainter.TextAntialiasing)
+            p.setRenderHint(QPainter.HighQualityAntialiasing)
+            p.fillRect(event.rect(), Qt.transparent)
+            # animated random dots background pattern
+            for i in range(4096):
+                x = randint(25, self.size().width() - 25)
+                y = randint(25, self.size().height() - 25)
+                # p.setPen(QPen(QColor(randint(9, 255), 255, 255), 1))
+                p.drawPoint(x, y)
+            p.setPen(QPen(Qt.white, 1))
+            p.rotate(40)
+            p.setFont(QFont('Ubuntu', 250))
+            p.drawText(200, 99, "Nuitka")
+            p.rotate(-40)
+            p.setPen(Qt.NoPen)
+            p.setBrush(QColor(0, 0, 0))
+            p.setOpacity(0.8)
+            p.drawRoundedRect(self.rect(), 9, 9)
+            p.end()
 
     def set_guimode(self):
         """Switch between simple and full UX"""
@@ -621,22 +624,28 @@ class MyMainWindow(QMainWindow):
 
 def main():
     ' Main Loop '
-    app, w = QApplication(sys.argv), MyMainWindow()
+    global A11Y
+    app = QApplication(sys.argv)
     app.setStyle('Windows')
     try:
-        opts, args = getopt(sys.argv[1:], 'hv', ('version', 'help'))
+        opts, args = getopt(sys.argv[1:], 'hv', ('version', 'help', 'a11y'))
     except:
         pass
     for o, v in opts:
         if o in ('-h', '--help'):
             print(''' Usage:
+                  --a11y            Use Accessibility theme and settings.
                   -h, --help        Show help informations and exit.
                   -v, --version     Show version information and exit.''')
             return sys.exit(1)
         elif o in ('-v', '--version'):
             print(__version__)
             return sys.exit(1)
-    w.setAttribute(Qt.WA_TranslucentBackground, True)
+        elif o in ('--a11y', ):
+            A11Y = True
+    w = MyMainWindow()
+    if not A11Y:
+        w.setAttribute(Qt.WA_TranslucentBackground, True)
     w.show()
     sys.exit(app.exec_())
 
