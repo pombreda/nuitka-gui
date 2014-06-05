@@ -38,7 +38,7 @@ import sys
 from getopt import getopt
 from os import path
 from random import randint
-from subprocess import call, check_output
+from subprocess import call, check_output, STDOUT, PIPE
 from webbrowser import open_new_tab
 
 from PyQt4.QtCore import QDir, QProcess, QSize, Qt
@@ -58,6 +58,8 @@ except ImportError:
 
 # constants
 DEBUG = True
+OPEN = 'chrt -i 0 xdg-open ' if sys.platform.startswith('linux') else 'start '
+OPEN = 'open ' if sys.platform.startswith('darwin') else OPEN
 
 
 ###############################################################################
@@ -429,15 +431,13 @@ class MyMainWindow(QMainWindow):
                            'Developer Manual PDF', self)
         menu_dev.setStatusTip('Open Nuitka Developer Manual PDF...')
         menu_dev.triggered.connect(
-            lambda: call(
-                'xdg-open /usr/share/doc/nuitka/Developer_Manual.pdf.gz',
-                shell=True))
+            lambda: call(OPEN + '/usr/share/doc/nuitka/Developer_Manual.pdf.gz',
+                         shell=True))
         menu_usr = QAction(QIcon.fromTheme("help-contents"), 'User Docs', self)
         menu_usr.setStatusTip('Open Nuitka End User Manual PDF...')
         menu_usr.triggered.connect(
-            lambda: call(
-                'nice -n 19 xdg-open /usr/share/doc/nuitka/README.pdf.gz',
-                shell=True))
+            lambda: call(OPEN + '/usr/share/doc/nuitka/README.pdf.gz',
+                         shell=True))
         menu_odoc = QAction(QIcon.fromTheme("help-browser"), 'OnLine Doc', self)
         menu_odoc.setStatusTip('Open Nuitka on line Documentation pages...')
         menu_odoc.triggered.connect(
@@ -449,12 +449,11 @@ class MyMainWindow(QMainWindow):
         menu_tra = QAction(QIcon.fromTheme("applications-development"),
                            'View Nuitka-GUI Source Code', self)
         menu_tra.setStatusTip('View, study, edit Nuitka-GUI Libre Source Code')
-        menu_tra.triggered.connect(
-            lambda: call('xdg-open ' + __file__, shell=True))
+        menu_tra.triggered.connect(lambda: call(OPEN + __file__, shell=True))
         menu_foo = QAction(QIcon.fromTheme("folder"), 'Open Output Dir', self)
         menu_foo.setStatusTip('Open the actual Output Directory location...')
         menu_foo.triggered.connect(
-            lambda: call('xdg-open ' + str(self.outdir.text()), shell=True))
+            lambda: call(OPEN + str(self.outdir.text()), shell=True))
         menu_pic = QAction(QIcon.fromTheme("camera-photo"), 'Screenshot', self)
         menu_pic.setStatusTip('Take a Screenshot for Documentation purposes..')
         menu_pic.triggered.connect(
@@ -465,8 +464,7 @@ class MyMainWindow(QMainWindow):
                            'Help Nuitka', self)
         menu_don.setStatusTip('Help the Nuitka Open Source Libre Free Project')
         menu_don.triggered.connect(
-            lambda: call('xdg-open http://nuitka.net/pages/donations.html',
-                         shell=True))
+            lambda: open_new_tab('http://nuitka.net/pages/donations.html'))
 
         # movable draggable toolbar
         self.toolbar = QToolBar(self)
@@ -514,16 +512,23 @@ class MyMainWindow(QMainWindow):
         self.setPalette(palette)
         self.setAttribute(Qt.WA_OpaquePaintEvent, False)
 
+    def get_fake_tree(self, target):
+        """Return the fake tree."""
+        try:
+            fake_tree = check_output('nuitka --dump-tree ' + target, shell=True)
+        except:
+            fake_tree = "ERROR: Failed to get Tree Dump."
+        finally:
+            return fake_tree.strip()
+
     def run(self):
         ' run the actual backend process '
-        self.buttonBox.setDisabled(True)
         self.treeview_nodes.clear()
         self.textedit_source.clear()
         self.output.clear()
         self.statusBar().showMessage('WAIT!, Working...')
         target = str(self.target.text()).strip()
-        fake_tree = check_output('nuitka --dump-tree ' + target, shell=True)
-        self.treeview_nodes.setText(fake_tree.strip())
+        self.treeview_nodes.setText(self.get_fake_tree(target))
         self.textedit_source.setText(open(target, "r").read().strip())
         conditional_1 = sys.platform.startswith('linux')
         conditional_2 = self.combo3.currentIndex() != 2
@@ -565,7 +570,6 @@ class MyMainWindow(QMainWindow):
         if not self.process.waitForStarted():
             return  # ERROR !
         self.statusBar().showMessage(__doc__.title())
-        self.buttonBox.setEnabled(True)
 
     def _process_finished(self):
         """finished sucessfully"""
