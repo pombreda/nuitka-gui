@@ -38,7 +38,7 @@ import sys
 from getopt import getopt
 from os import path
 from random import randint
-from subprocess import call, check_output, STDOUT, PIPE
+from subprocess import call, check_output
 from webbrowser import open_new_tab
 
 from PyQt4.QtCore import QDir, QProcess, QSize, Qt
