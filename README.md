@@ -25,3 +25,8 @@ nuitka-gui
 - Python 2.x
 - PyQt 4.x
 - Nuitka
+
+# Help instructions:
+
+- Check the ToolBar buttons with all available Help for Nuitka (Requires Internet, and a PDF Viewer App).
+- The GUI is designed to copy the same behaviour and names of the CLI command parameters so the Doc fit both.
