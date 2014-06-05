@@ -31,6 +31,13 @@ nuitka-gui
 - Check the ToolBar buttons with all available Help for Nuitka (Requires Internet, and a PDF Viewer App).
 - The GUI is designed to copy the same behaviour and names of the CLI command parameters so the Doc fit both.
 
+# Accessibility:
+
+- Run Nuitka-GUI as follows to use your current Desktop Accessibility technologies (skip theme, skin, fonts, etc):
+```
+nuitka-gui.py --a11y
+```
+
 # Misc:
 
 - OPTIONAL: MS Windows/OsX users should download and install Ubuntu fonts: https://www.google.com/fonts#UsePlace:use/Collection:Ubuntu
