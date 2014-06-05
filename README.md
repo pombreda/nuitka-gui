@@ -30,3 +30,8 @@ nuitka-gui
 
 - Check the ToolBar buttons with all available Help for Nuitka (Requires Internet, and a PDF Viewer App).
 - The GUI is designed to copy the same behaviour and names of the CLI command parameters so the Doc fit both.
+
+# Misc:
+
+- OPTIONAL: MS Windows/OsX users should download and install Ubuntu fonts: https://www.google.com/fonts#UsePlace:use/Collection:Ubuntu
+- OPTIONAL: MS Windows/OsX users should download and install Oxygen fonts: https://www.google.com/fonts#UsePlace:use/Collection:Oxygen
