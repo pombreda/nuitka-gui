@@ -33,7 +33,8 @@ nuitka-gui
 
 # Accessibility:
 
-- Run Nuitka-GUI as follows to use your current Desktop Accessibility technologies (skip theme, skin, fonts, etc):
+- If you wish to disable theme, skin, fonts, etc *(looks Ugly)* but use Accessibility
+- Run Nuitka-GUI as follows to use your current Desktop Accessibility technologies:
 ```
 nuitka-gui.py --a11y
 ```
