@@ -517,7 +517,7 @@ class MyMainWindow(QMainWindow):
     def get_fake_tree(self, target):
         """Return the fake tree."""
         try:
-            fake_tree = check_output('nuitka --dump-tree ' + target, shell=True)
+            fake_tree = check_output('nuitka --dump-xml ' + target, shell=True)
         except:
             fake_tree = "ERROR: Failed to get Tree Dump."
         finally:
