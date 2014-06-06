@@ -22,9 +22,9 @@ nuitka-gui
 
 # Requisites:
 
-- Python 2.x
-- PyQt 4.x
-- Nuitka
+- [Python 2.x](https://www.python.org "Python Homepage")
+- [PyQt 4.x](http://www.riverbankcomputing.co.uk/software/pyqt/download "PyQt4 Homepage")
+- [Nuitka](http://nuitka.net/pages/download.html "Nuitka's Downloads Homepage")
 
 # Help instructions:
 
@@ -41,5 +41,5 @@ nuitka-gui.py --a11y
 
 # Misc:
 
-- OPTIONAL: MS Windows/OsX users should download and install Ubuntu fonts: https://www.google.com/fonts#UsePlace:use/Collection:Ubuntu
-- OPTIONAL: MS Windows/OsX users should download and install Oxygen fonts: https://www.google.com/fonts#UsePlace:use/Collection:Oxygen
+- OPTIONAL: [MS Windows/OsX users should download and install Ubuntu fonts](https://www.google.com/fonts#UsePlace:use/Collection:Ubuntu "Ubuntu fonts on Google Fonts") 
+- OPTIONAL: [MS Windows/OsX users should download and install Oxygen fonts](https://www.google.com/fonts#UsePlace:use/Collection:Oxygen "Oxygen fonts on Google Fonts") 
