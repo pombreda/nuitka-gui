@@ -626,6 +626,9 @@ def main():
     ' Main Loop '
     global A11Y
     app = QApplication(sys.argv)
+    app.setApplicationName(__doc__.strip().lower())
+    app.setOrganizationName("Nuitka")
+    app.setOrganizationDomain("Nuitka")
     try:
         opts, args = getopt(sys.argv[1:], 'hv', ('version', 'help', 'a11y'))
     except:
