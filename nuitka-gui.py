@@ -60,6 +60,8 @@ except ImportError:
 DEBUG, A11Y = True, False
 OPEN = 'chrt -i 0 xdg-open ' if sys.platform.startswith('linux') else 'start '
 OPEN = 'open ' if sys.platform.startswith('darwin') else OPEN
+IS_WIN = sys.platform.startswith('win')
+NUITKA = 'nuitka' if not IS_WIN else r'"C:\Python27\Scripts\nuitka"'
 
 
 ###############################################################################
@@ -359,7 +361,8 @@ class MyMainWindow(QMainWindow):
         self.completer.popup().setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.outdir.setCompleter(self.completer)
 
-        self.btn1 = QPushButton(QIcon.fromTheme("document-open"), '')
+        self.btn1 = QPushButton(QIcon.fromTheme("document-open"),
+                                'Open' if IS_WIN else '')
         self.btn1.clicked.connect(
             lambda: open('.nuitka-output-dir.txt', 'w').write(str(
                 QFileDialog.getExistingDirectory(None, 'Open Output Directory',
@@ -384,7 +387,8 @@ class MyMainWindow(QMainWindow):
             lambda: self.clearButton2.setVisible(False))
         self.target.setPlaceholderText('Target Python App to Binary Compile')
         self.target.setCompleter(self.completer)
-        self.btn2 = QPushButton(QIcon.fromTheme("document-open"), '')
+        self.btn2 = QPushButton(QIcon.fromTheme("document-open"),
+                                'Open' if IS_WIN else '')
         self.btn2.clicked.connect(lambda: self.target.setText(str(
             QFileDialog.getOpenFileName(
                 None, "Open", path.expanduser("~"),
@@ -408,7 +412,8 @@ class MyMainWindow(QMainWindow):
             lambda: self.clearButton3.setVisible(False))
         self.icon.setPlaceholderText('Path to Icon file for your App')
         self.icon.setCompleter(self.completer)
-        self.btn3 = QPushButton(QIcon.fromTheme("document-open"), '')
+        self.btn3 = QPushButton(QIcon.fromTheme("document-open"),
+                                'Open' if IS_WIN else '')
         self.btn3.clicked.connect(lambda: self.icon.setText(str(
             QFileDialog.getOpenFileName(
                 None, "Open", path.expanduser("~"),
@@ -476,9 +481,10 @@ class MyMainWindow(QMainWindow):
         r_spacer.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.toolbar.addWidget(l_spacer)
         self.toolbar.addSeparator()
-        self.toolbar.addActions((
-            menu_salir, menu_minimize, menu_qt, menu_man, menu_dev, menu_tra,
-            menu_odoc, menu_usr, menu_foo, menu_pic, menu_don))
+        self.toolbar.addActions((menu_salir, menu_minimize, menu_qt,
+                                 menu_odoc, menu_foo, menu_pic, menu_don))
+        if not IS_WIN:
+            self.toolbar.addActions((menu_man, menu_dev, menu_tra, menu_usr))
         self.toolbar.addSeparator()
         self.toolbar.addWidget(r_spacer)
         self.addToolBar(Qt.BottomToolBarArea, self.toolbar)
@@ -517,7 +523,8 @@ class MyMainWindow(QMainWindow):
     def get_fake_tree(self, target):
         """Return the fake tree."""
         try:
-            fake_tree = check_output('nuitka --dump-xml ' + target, shell=True)
+            fake_tree = check_output(NUITKA + ' --dump-xml ' + target,
+                                     shell=True)
         except:
             fake_tree = "ERROR: Failed to get Tree Dump."
         finally:
@@ -535,7 +542,7 @@ class MyMainWindow(QMainWindow):
         conditional_1 = sys.platform.startswith('linux')
         conditional_2 = self.combo3.currentIndex() != 2
         command_to_run_nuitka = " ".join((
-            'chrt -i 0' if conditional_1 and conditional_2 else '', 'nuitka',
+            'chrt -i 0' if conditional_1 and conditional_2 else '', NUITKA,
             '--debug' if self.slider1.value() else '',
             '--verbose' if self.slider2.value() else '',
             '--show-progress' if self.slider3.value() else '',
@@ -565,11 +572,12 @@ class MyMainWindow(QMainWindow):
             '--icon="{}"'.format(self.icon.text()) if self.icon.text() else '',
             '--python-version={}'.format(self.combo1.currentText()),
             '--jobs={}'.format(self.combo3.currentText()),
-            '--output-dir="{}"'.format(self.outdir.text()), target))
+            '--output-dir="{}"'.format(self.outdir.text()), "{}".format(target)
+            ))
         if DEBUG:
             print(command_to_run_nuitka)
         self.process.start(command_to_run_nuitka)
-        if not self.process.waitForStarted():
+        if not self.process.waitForStarted() and not IS_WIN:
             return  # ERROR !
         self.statusBar().showMessage(__doc__.title())
 
